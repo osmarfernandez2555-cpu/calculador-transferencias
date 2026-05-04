@@ -1,8 +1,5 @@
-[phases.setup]
-nixPkgs = ["nodejs_20", "chromium"]
-
 [phases.install]
-cmds = ["npm install --ignore-scripts"]
+cmds = ["npm install", "npx playwright install chromium", "npx playwright install-deps chromium"]
 
 [start]
-cmd = "PUPPETEER_EXECUTABLE_PATH=$(which chromium) node server.js"
+cmd = "node server.js"
