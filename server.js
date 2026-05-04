@@ -2,7 +2,7 @@
 delete process.env.PUPPETEER_EXECUTABLE_PATH;
 delete process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD;
 const express = require('express');
-const puppeteer = require('puppeteer');
+const { chromium } = require('playwright');
 const cors = require('cors');
 const path = require('path');
 
