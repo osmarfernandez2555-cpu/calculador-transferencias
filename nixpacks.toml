@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["chromium", "nss", "freetype", "harfbuzz", "ca-certificates", "ttf-liberation", "fontconfig"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[start]
+cmd = "node server.js"
