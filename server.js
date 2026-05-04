@@ -45,16 +45,10 @@ app.get('/api/estimar', async (req, res) => {
 
   let browser;
   try {
-  browser = await puppeteer.launch({
-  headless: "new",
-  args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--single-process'
-  ]
+ browser = await chromium.launch({
+  args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
 });
+const page = await browser.newPage();
 
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 800 });
