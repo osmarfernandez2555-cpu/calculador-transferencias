@@ -1,1 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Transferencia · Tutu Automotores</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .container { width: 100%; max-width: 560px; }
+  .logo-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .logo-bar .brand {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a3a5c;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .logo-bar .sep { color: #bbb; }
+  .logo-bar .sub { font-size: 13px; color: #666; }
 
+  h1 { font-size: 22px; font-weight: 600; color: #1a3a5c; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e8eaed;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #999;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .patente-wrap {
+    display: flex;
+    gap: 10px;
+  }
+  .patente-input {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border: 2px solid #e0e4eb;
+    border-radius: 10px;
+    color: #1a3a5c;
+    transition: border-color 0.2s;
+    background: #fafbfc;
+  }
+  .patente-input:focus { outline: none; border-color: #1a6dd4; background: #fff; }
+  .patente-input::placeholder { color: #c0c8d4; font-size: 20px; }
+
+  .btn-consultar {
+    padding: 0 22px;
+    background: #1a6dd4;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-consultar:hover { background: #1558b0; }
+  .btn-consultar:active { transform: scale(0.98); }
+  .btn-consultar:disabled { background: #a0b8d8; cursor: not-allowed; }
+
+  /* Estado de carga */
+  .estado {
+    margin-top: 1rem;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .estado.cargando { display: flex; background: #eef4ff; color: #1a6dd4; border: 1px solid #c0d8f5; }
+  .estado.error { display: flex; background: #fff0f0; color: #c0392b; border: 1px solid #f5c0c0; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid #c0d8f5;
+    border-top-color: #1a6dd4;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Resultados */
+  .results { display: none; }
+  .results.show { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .desglose {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .metric {
+    background: #f7f9fc;
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid #eaecf0;
+  }
+  .metric .mlabel { font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric .mval { font-size: 20px; font-weight: 700; color: #1a3a5c; }
+  .metric .mval.verde { color: #1a7a4e; }
+
+  .total-box {
+    background: #1a3a5c;
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .total-box .tl { font-size: 14px; color: #a0b8cc; font-weight: 500; }
+  .total-box .tv { font-size: 30px; font-weight: 800; color: #fff; }
+
+  .badge-patente {
+    display: inline-block;
+    background: #f0f4fa;
+    border: 1px solid #d0dced;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #1a3a5c;
+    margin-bottom: 14px;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 10px;
+    text-align: center;
+  }
+  .hint a { color: #1a6dd4; text-decoration: none; }
+  .hint a:hover { text-decoration: underline; }
+
+  /* Pasos de espera */
+  .pasos { margin-top: 8px; }
+  .paso {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #888;
+    padding: 3px 0;
+  }
+  .paso .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #c0d8f5;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .paso.activo .dot { background: #1a6dd4; }
+  .paso.activo { color: #1a6dd4; font-weight: 500; }
+  .paso.done .dot { background: #1a7a4e; }
+  .paso.done { color: #1a7a4e; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo-bar">
+    <span class="brand">Tutu Automotores</span>
+    <span class="sep">·</span>
+    <span class="sub">Herramientas internas</span>
+  </div>
+
+  <h1>Calculadora de transferencia</h1>
+  <p class="subtitle">Consultá el costo DNRPA automáticamente ingresando solo la patente</p>
+
+  <div class="card">
+    <div class="card-title">Patente del vehículo</div>
+    <div class="patente-wrap">
+      <input
+        type="text"
+        class="patente-input"
+        id="patente"
+        placeholder="AA000BB"
+        maxlength="7"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+        onkeydown="if(event.key==='Enter') consultar()"
+      />
+      <button class="btn-consultar" id="btnConsultar" onclick="consultar()">Consultar</button>
+    </div>
+
+    <div class="estado cargando" id="estadoCarga">
+      <div class="spinner"></div>
+      <div>
+        <div id="estadoTexto">Abriendo el estimador DNRPA...</div>
+        <div class="pasos" id="pasos">
+          <div class="paso activo" id="p1"><div class="dot"></div> Cargando el sitio DNRPA</div>
+          <div class="paso" id="p2"><div class="dot"></div> Ingresando patente</div>
+          <div class="paso" id="p3"><div class="dot"></div> Calculando aranceles</div>
+          <div class="paso" id="p4"><div class="dot"></div> Extrayendo valores</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="estado error" id="estadoError">
+      <span>⚠</span>
+      <span id="errorTexto">Error al consultar</span>
+    </div>
+  </div>
+
+  <div class="results card" id="results">
+    <div class="card-title">Resultado DNRPA</div>
+    <div class="badge-patente" id="resBadge">—</div>
+    <div class="desglose">
+      <div class="metric">
+        <div class="mlabel">Costo del trámite</div>
+        <div class="mval" id="resTramite">—</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">Valor de tabla</div>
+        <div class="mval" id="resTabla">—</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">Sellado (1%)</div>
+        <div class="mval verde" id="resSellado">—</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">Actualizado</div>
+        <div class="mval" style="font-size:13px;padding-top:4px;color:#666;" id="resTimestamp">—</div>
+      </div>
+    </div>
+    <div class="total-box">
+      <div class="tl">Total transferencia DNRPA</div>
+      <div class="tv" id="resTotal">—</div>
+    </div>
+  </div>
+
+  <p class="hint">
+    ¿El resultado no cargó? <a href="https://www2.jus.gob.ar/dnrpa-site/#!/estimador" target="_blank">Abrí el estimador manual →</a>
+  </p>
+</div>
+
+<script>
+// En producción apunta al Railway, en local al mismo servidor
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : '';  // mismo origen en Railway
+
+function fmt(n) {
+  if (!n && n !== 0) return '—';
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+
+function setPaso(n) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('p' + i);
+    el.className = 'paso' + (i < n ? ' done' : i === n ? ' activo' : '');
+  }
+}
+
+let pasoInterval = null;
+
+async function consultar() {
+  const patente = document.getElementById('patente').value.trim();
+  if (!patente || patente.length < 6) {
+    mostrarError('Ingresá una patente válida (ej: AA123BB)');
+    return;
+  }
+
+  const btn = document.getElementById('btnConsultar');
+  btn.disabled = true;
+  btn.textContent = 'Consultando...';
+
+  document.getElementById('estadoCarga').className = 'estado cargando';
+  document.getElementById('estadoError').className = 'estado error';
+  document.getElementById('results').className = 'results card';
+
+  // Animación de pasos
+  let paso = 1;
+  setPaso(1);
+  pasoInterval = setInterval(() => {
+    if (paso < 4) { paso++; setPaso(paso); }
+  }, 3500);
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/estimar?patente=${encodeURIComponent(patente)}`);
+    const data = await resp.json();
+
+    clearInterval(pasoInterval);
+    setPaso(4);
+    await new Promise(r => setTimeout(r, 500));
+
+    if (!resp.ok) {
+      mostrarError(data.error || 'Error del servidor');
+      return;
+    }
+
+    // Mostrar resultados
+    document.getElementById('estadoCarga').className = 'estado';
+    document.getElementById('resBadge').textContent = data.patente;
+    document.getElementById('resTramite').textContent = fmt(data.costoTramite);
+    document.getElementById('resTabla').textContent = fmt(data.valorTabla);
+    document.getElementById('resSellado').textContent = fmt(data.sellado);
+    document.getElementById('resTotal').textContent = fmt(data.totalDNRPA);
+
+    if (data.timestamp) {
+      const d = new Date(data.timestamp);
+      document.getElementById('resTimestamp').textContent =
+        d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    document.getElementById('results').className = 'results card show';
+
+  } catch (err) {
+    clearInterval(pasoInterval);
+    mostrarError('No se pudo conectar con el servidor. Verificá que esté corriendo.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Consultar';
+  }
+}
+
+function mostrarError(msg) {
+  document.getElementById('estadoCarga').className = 'estado';
+  document.getElementById('errorTexto').textContent = msg;
+  document.getElementById('estadoError').className = 'estado error';
+}
+</script>
+</body>
+</html>
