@@ -45,14 +45,13 @@ app.get('/api/estimar', async (req, res) => {
 
   let browser;
   try {
-   browser = await puppeteer.launch({
-  headless: true,
+  browser = await puppeteer.launch({
+  headless: "new",
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
     '--disable-dev-shm-usage',
     '--disable-gpu',
-    '--no-first-run',
     '--single-process'
   ]
 });
